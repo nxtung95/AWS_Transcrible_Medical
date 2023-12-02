@@ -279,6 +279,10 @@ export default class TranscriptionWindow extends Component {
                         onClick={() => { recording ? this.stopRecord() : this.startRecord(); }} >
                         {recording ? 'Stop Dictation' : 'Start Dictation'}
                     </button>
+                    <button class="btn btn-primary" type="button"
+                        onClick={() => { this.clearTranscript() }}
+                    >Clear transcript
+                    </button>
                     {/*<button class="btn btn-primary" type="button"*/}
                     {/*    onClick={() => { this.toggleSummary() }}*/}
                     {/*>*/}
@@ -350,5 +354,16 @@ export default class TranscriptionWindow extends Component {
                 {/*</div>*/}
             </div>
         );
+    }
+
+    clearTranscript = () => {
+        this.setState({
+            transcript: [], // list of finalized transcript
+            transcriptBoxs: [], // list of boxed transcript words
+            segments: [],
+            entities: [],
+            partialTranscript: "", // last chunk of transcript, which has not be finalized
+            annotations: []
+        });
     }
 }
