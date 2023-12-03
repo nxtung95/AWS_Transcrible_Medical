@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { detectEntity } from '../comprehend/DetectEntities';
 import * as _ from 'lodash'
-import { lowConfidenceStyle } from './TranscriptionWindow';
 
 export const
     tonkenizeTranscript = async (transcipt, results) => {
@@ -69,75 +68,18 @@ export default class Transcript extends Component {
         super(props);
 
         this.state = {
-            startTime: props.startTime,
-            wordTokenList: props.words,
-            annotationStyle: props.annotationStyle,
-            showConfidence: props.showConfidence
+            wordTokenList: props.words
         }
     }
 
     componentWillReceiveProps(props) {
         this.setState({
-            wordTokenList: props.words,
-            annotationStyle: props.annotationStyle,
-            showConfidence: props.showConfidence
+            wordTokenList: props.words
         });
     }
 
-    entityStyle = (token) => {
-        let entities = token.labels
-        let { wordTokenList, annotationStyle, showConfidence } = this.state;
+    entityStyle = () => {
         let style = { color: 'black', 'text-decoration': 'none', 'font-size': '18px' };
-
-        _.map(entities, (e, i) => {
-            _.map(annotationStyle, (v, k) => {
-                if (v !== undefined && e['Category'] === k) {
-                    if (v['mid']) {
-                        style = { ...style, ...v['mid'] }; // body
-
-                        // left border
-                        if (e['BeginOffset'] === token.start) {
-                            style = { ...style, ...v['left'] }; // body
-                        }
-
-                        // right border
-                        if (e['EndOffset'] === token.end
-                            || e['EndOffset'] === token.end - 1 // remove punctuation
-                        ) {
-                            style = { ...style, ...v['right'] }; // body
-                        }
-
-                        // add left/right border for attributes as well
-                        _.map(e['Attributes'], (attr, i) => {
-                            // left border
-                            if (attr['BeginOffset'] === token.start) {
-                                style = { ...style, ...v['left'] }; // body
-                            }
-
-                            // right border
-                            if (attr['EndOffset'] === token.end
-                                || attr['EndOffset'] === token.end - 1 // remove punctuation
-                            ) {
-                                style = { ...style, ...v['right'] }; // body
-                            }
-
-                        })
-
-                    } else {
-                        style = { ...style, ...v['all'] }; // body
-
-                    }
-
-                }
-            });
-
-        });
-
-        if (showConfidence && token.confidence < 0.9) {
-            // confidence style
-            style = { ...style, ...lowConfidenceStyle }
-        }
-
         return style;
     }
 
@@ -166,27 +108,13 @@ export default class Transcript extends Component {
             return `${n}`
         }
     }
-    formatTimestamp = (timestamp) => {
-        let time = parseInt(timestamp);
-        let hr = Math.floor(time / 3600);
-        let min = Math.floor(time / 60);
-        let sec = Math.floor(time % 60);
-
-
-        return `${this.formatNumber(hr)}:${this.formatNumber(min)}:${this.formatNumber(sec)}`
-    }
-
-
 
     render() {
-        let { startTime, wordTokenList, annotationStyle, showConfidence } = this.state;
+        let {wordTokenList } = this.state;
         return (
             <div class="col mr-n3">
                 <div class="row mx-n3">
-                    <div class="col-1 ml-n3 px-0" style={{ 'padding-top': '3px', 'font-size': '18px' }}>
-                        {this.formatTimestamp(startTime)}
-                    </div>
-                    <div class="col-11 mr-n3 pr-0 pl-2">
+                    <div class="col-12 mr-n3 pr-0 pl-2">
                         <p style={{ 'line-height': '20pt' }}>
                             {
                                 _.map(wordTokenList, (token, i) => {
@@ -202,11 +130,7 @@ export default class Transcript extends Component {
                                                 <span>
                                                     <a
                                                         href="#"
-                                                        style={this.entityStyle(token)}
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            this.props.updateAnnotation(token.labels)
-                                                        }}>
+                                                        style={this.entityStyle()}>
                                                         {display}
                                                     </a>
                                                     {this.isRightMostBorder(token) &&
@@ -217,7 +141,7 @@ export default class Transcript extends Component {
                                                 </span>
                                             ) :
                                             ( // normal text
-                                                <span style={this.entityStyle(token)}>
+                                                <span style={this.entityStyle()}>
                                                     {display}
                                                 </span>
                                             )
